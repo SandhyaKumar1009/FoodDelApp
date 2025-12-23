@@ -1,0 +1,70 @@
+services:
+  # Python Backend Service
+  - type: web
+    name: foodapp-python-backend
+    runtime: python
+    rootDir: python-backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run.py
+    envVars:
+      - key: DATABASE_URL
+        scope: build,runtime
+        sync: false
+      - key: JWT_SECRET_KEY
+        value: your-jwt-secret-key-change-this
+      - key: PORT
+        value: "5000"
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHONUNBUFFERED
+        value: "1"
+
+  # Node Backend Service
+  - type: web
+    name: foodapp-node-backend
+    runtime: node
+    rootDir: node-backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: "4000"
+      - key: NODE_ENV
+        value: production
+
+  # API Gateway Service
+  - type: web
+    name: foodapp-api-gateway
+    runtime: node
+    rootDir: api-gateway
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: "3000"
+      - key: NODE_ENV
+        value: production
+      - key: PYTHON_BACKEND_URL
+        fromService:
+          type: web
+          name: foodapp-python-backend
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: NODE_BACKEND_URL
+        fromService:
+          type: web
+          name: foodapp-node-backend
+          envVarKey: RENDER_EXTERNAL_URL
+
+  # Frontend Static Site
+  - type: static_site
+    name: foodapp-frontend
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: foodapp-api-gateway
+          envVarKey: RENDER_EXTERNAL_URL
+        value: /api
