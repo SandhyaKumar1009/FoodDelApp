@@ -35,7 +35,9 @@ def create_app():
     # INITIALIZE EXTENSIONS
     # ========================================
     db.init_app(app)
-    CORS(app, origins=["*"], supports_credentials=True)
+    front_url = os.getenv('FRONTEND_URL')
+    allowed_origins = [front_url] if front_url else ["*"]
+    CORS(app, origins=allowed_origins, supports_credentials=True)
     
     # ========================================
     # REGISTER BLUEPRINTS (Controllers)
