@@ -20,7 +20,13 @@ def create_app():
     # ========================================
     # CONFIGURATION
     # ========================================
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+    db_url = os.getenv('DATABASE_URL')
+    if db_url:
+        if db_url.startswith('postgres://'):
+            db_url = db_url.replace('postgres://', 'postgresql://', 1)
+        if db_url.startswith('postgresql://') and '+psycopg' not in db_url:
+            db_url = db_url.replace('postgresql://', 'postgresql+psycopg://', 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_url
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
     app.config['JSON_SORT_KEYS'] = False
@@ -29,7 +35,7 @@ def create_app():
     # INITIALIZE EXTENSIONS
     # ========================================
     db.init_app(app)
-    CORS(app, origins=["http://localhost:3000"], supports_credentials=True)
+    CORS(app, origins=["*"], supports_credentials=True)
     
     # ========================================
     # REGISTER BLUEPRINTS (Controllers)
