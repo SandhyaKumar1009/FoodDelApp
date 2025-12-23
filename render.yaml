@@ -54,17 +54,3 @@ services:
           type: web
           name: foodapp-node-backend
           envVarKey: RENDER_EXTERNAL_URL
-
-  # Frontend Static Site
-  - type: static_site
-    name: foodapp-frontend
-    rootDir: frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    envVars:
-      - key: VITE_API_URL
-        fromService:
-          type: web
-          name: foodapp-api-gateway
-          envVarKey: RENDER_EXTERNAL_URL
-        value: /api
